@@ -8,3 +8,4 @@
 !**/src/main/**
 !**/src/test/**
 target/
+META-INF/
