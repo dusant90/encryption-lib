@@ -1,7 +1,7 @@
 package com.demo.app.filehandler.api.controller;
 
 import com.demo.app.filehandler.api.service.FileService;
-import crypto.CryptoException;
+import encrypt.EncryptionFailedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,7 +17,7 @@ public class FileController {
     private FileService fileService;
 
     @GetMapping("/echo")
-    public String echo() throws IOException, CryptoException {
+    public String echo() throws IOException, EncryptionFailedException {
 
         return fileService.getFileContent();
     }

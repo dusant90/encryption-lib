@@ -1,7 +1,5 @@
 package com.demo.app.filehandler.api.service;
-
-
-import crypto.CryptoException;
+import encrypt.EncryptionFailedException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -13,7 +11,7 @@ public class FileServiceTest {
 
 
     @Test
-    public void testGetFileContent() throws IOException, CryptoException {
+    public void testGetFileContent() throws IOException, EncryptionFailedException {
         fileService.getFileContent();
     }
 }
