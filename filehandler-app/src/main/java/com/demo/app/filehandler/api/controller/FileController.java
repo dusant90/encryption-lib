@@ -1,25 +1,72 @@
 package com.demo.app.filehandler.api.controller;
 
+import com.demo.app.filehandler.api.entity.Response.UploadFileResponse;
 import com.demo.app.filehandler.api.service.FileService;
 import encrypt.EncryptionFailedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import javax.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 
 @RestController
-@RequestMapping("/api/file")
+@RequestMapping("/api")
 public class FileController {
+
+    private static final Logger logger = LoggerFactory.getLogger(FileController.class);
 
     @Autowired
     private FileService fileService;
 
     @GetMapping("/echo")
-    public String echo() throws IOException, EncryptionFailedException {
-
-        return fileService.getFileContent();
+    public String echo() {
+        return "Service is up and running";
     }
 
+    @PostMapping("/file/upload")
+    public UploadFileResponse uploadFile(@RequestParam("file") MultipartFile file) {
+
+        String fileName = fileService.storeFile(file);
+
+        String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/api/file/download/")
+                .path(fileName)
+                .toUriString();
+
+        return new UploadFileResponse(fileName, fileDownloadUri,
+                file.getContentType(), file.getSize());
+    }
+
+    @GetMapping("/file/download/{fileName:.+}")
+    public ResponseEntity<Resource> downloadFile(@PathVariable String fileName, HttpServletRequest request) throws IOException {
+        // Load file as Resource
+        File file = fileService.loadFileAsResource(fileName);
+
+        // Try to determine file's content type
+        String contentType = null;
+        contentType = request.getServletContext().getMimeType(file.getAbsolutePath());
+
+        // Fallback to the default content type if type could not be determined
+        if (contentType == null) {
+            contentType = "application/octet-stream";
+        }
+
+        InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"")
+                .body(resource);
+    }
 }
