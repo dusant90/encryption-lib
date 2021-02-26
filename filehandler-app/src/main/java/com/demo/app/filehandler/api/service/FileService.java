@@ -1,11 +1,8 @@
 package com.demo.app.filehandler.api.service;
 
-import com.demo.app.filehandler.api.encryption.EncryptionClientAdapter;
 import com.demo.app.filehandler.api.entity.FileStorageProperties;
 import com.demo.app.filehandler.api.exception.FileStorageException;
 import com.demo.app.filehandler.api.exception.MyFileNotFoundException;
-import encrypt.EncryptionFailedException;
-import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -27,15 +24,11 @@ public class FileService {
     private final Path fileStorageLocation;
 
     @Autowired
-    private EncryptionClientAdapter encryptionClientAdapter;
-
-    @Autowired
-    public FileService(FileStorageProperties fileStorageProperties, EncryptionClientAdapter encryptionClientAdapter) {
+    public FileService(FileStorageProperties fileStorageProperties) {
 
         this.fileStorageLocation = Paths
                 .get(fileStorageProperties.getUploadDir())
                 .toAbsolutePath().normalize();
-        this.encryptionClientAdapter = encryptionClientAdapter;
 
         try {
             Files.createDirectories(this.fileStorageLocation);
@@ -44,8 +37,8 @@ public class FileService {
         }
     }
 
-    public String storeFile(MultipartFile file) {
-        // Normalize file name
+    public String storeFile(MultipartFile file) throws IOException {
+
         String fileName = StringUtils.cleanPath(file.getOriginalFilename());
 
         try {
@@ -53,17 +46,11 @@ public class FileService {
             if (fileName.contains("..")) {
                 throw new FileStorageException("Sorry! Filename contains invalid path sequence " + fileName);
             }
-            //encrypt a file
-            File encryptedFile = encryptionClientAdapter.encrypt(file);
-
-            // Copy file to the target location (Replacing existing file with the same name)
             Path targetLocation = this.fileStorageLocation.resolve(fileName);
-
-            Files.copy(FileUtils.openInputStream(encryptedFile),
-                    targetLocation, StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
             return fileName;
-        } catch (IOException | EncryptionFailedException ex) {
+        } catch (IOException ex) {
             throw new FileStorageException("Could not store file " + fileName + ". Please try again!", ex);
         }
     }
@@ -73,13 +60,11 @@ public class FileService {
             Path filePath = this.fileStorageLocation.resolve(fileName).normalize();
             Resource resource = new UrlResource(filePath.toUri());
             if (resource.exists()) {
-                // we need to decrypt a file that is downloaded from the server
-                File decryptedFile = encryptionClientAdapter.decrypt(resource.getFile());
-                return decryptedFile;
+                return resource.getFile();
             } else {
                 throw new MyFileNotFoundException("File not found " + fileName);
             }
-        } catch (MalformedURLException | EncryptionFailedException ex) {
+        } catch (MalformedURLException ex) {
             throw new MyFileNotFoundException("File not found " + fileName, ex);
         }
     }

@@ -34,7 +34,7 @@ public class FileController {
     }
 
     @PostMapping("/file/upload")
-    public UploadFileResponse uploadFile(@RequestParam("file") MultipartFile file) {
+    public UploadFileResponse uploadFile(@RequestParam("file") MultipartFile file) throws IOException {
 
         String fileName = fileService.storeFile(file);
 

@@ -1,6 +1,7 @@
 package com.demo.app.filehandler.api.exception;
 
 public class FileStorageException extends RuntimeException{
+
     public FileStorageException(String message) {
         super(message);
     }
