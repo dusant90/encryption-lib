@@ -1,0 +1,122 @@
+{
+	"info": {
+		"_postman_id": "5095d4e0-f97c-4c07-94af-5e171d0a10e9",
+		"name": "encrypt",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "file upload",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/C:/Users/ledut/Downloads/dusan.txt"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/file/upload",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"file",
+						"upload"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "download file",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/file/download/file.txt",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"file",
+						"download",
+						"file.txt"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "encryptFile",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/C:/Users/ledut/Downloads/koka.txt"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:8081/api/encrypt",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"encrypt"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "decryptFile",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/C:/Users/ledut/Downloads/file.txt"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:8081/api/decryptFile",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"decryptFile"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
