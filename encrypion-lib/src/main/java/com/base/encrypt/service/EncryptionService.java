@@ -1,4 +1,7 @@
-package encrypt;
+package com.base.encrypt.service;
+
+import com.base.encrypt.exception.EncryptionFailedException;
+import org.springframework.stereotype.Service;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
@@ -6,18 +9,17 @@ import javax.crypto.spec.SecretKeySpec;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
-import java.util.Base64;
 
-public class EncryptionProvider {
+@Service
+public class EncryptionService {
 
     private static final String AES_ENCRYPTION = "AES";
-    private String encodedKey;
+    private String encryptionPassword = "password";
 
-    public EncryptionProvider(String key) {
-        this.encodedKey = Base64.getEncoder().encodeToString(key.getBytes());
-    }
+//    public EncryptionService(String key) {
+//        this.encodedKey = Base64.getEncoder().encodeToString(key.getBytes());
+//    }
 
     public File encrypt(File file) throws EncryptionFailedException {
         return execute(Cipher.ENCRYPT_MODE, file);
@@ -31,7 +33,7 @@ public class EncryptionProvider {
         try {
 
             Cipher cipher = Cipher.getInstance(AES_ENCRYPTION);
-            cipher.init(cipherMode, generateSecretKey(this.encodedKey));
+            cipher.init(cipherMode, generateSecretKey(this.encryptionPassword));
 
             FileInputStream inputStream = new FileInputStream(file);
             byte[] inputBytes = new byte[(int) file.length()];
@@ -53,9 +55,9 @@ public class EncryptionProvider {
         }
     }
 
-    public SecretKey generateSecretKey(String key) throws NoSuchAlgorithmException {
+    public SecretKey generateSecretKey(String encryptionPassword) {
 
-        byte[] decodedKey = key.getBytes();
+        byte[] decodedKey = encryptionPassword.getBytes();
         return new SecretKeySpec(
                 Arrays.copyOf(decodedKey, 16),
                 AES_ENCRYPTION

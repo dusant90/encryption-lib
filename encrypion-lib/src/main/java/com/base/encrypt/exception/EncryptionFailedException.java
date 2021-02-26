@@ -1,4 +1,4 @@
-package encrypt;
+package com.base.encrypt.exception;
 
 public class EncryptionFailedException extends Exception {
 
