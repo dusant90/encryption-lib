@@ -1,10 +1,10 @@
 package com.demo.app.filehandler.api.service;
 
+import com.demo.app.filehandler.api.encryption.EncryptionClientAdapter;
 import com.demo.app.filehandler.api.entity.FileStorageProperties;
 import com.demo.app.filehandler.api.exception.FileStorageException;
 import com.demo.app.filehandler.api.exception.MyFileNotFoundException;
 import encrypt.EncryptionFailedException;
-import encrypt.EncryptionProvider;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -24,19 +24,18 @@ import java.nio.file.StandardCopyOption;
 @Service
 public class FileService {
 
-    //TODO move the key to configuration
-    private static final String KEY = "Test Key";
-
     private final Path fileStorageLocation;
-    private EncryptionProvider encryptionProvider;
 
     @Autowired
-    public FileService(FileStorageProperties fileStorageProperties) {
+    private EncryptionClientAdapter encryptionClientAdapter;
+
+    @Autowired
+    public FileService(FileStorageProperties fileStorageProperties, EncryptionClientAdapter encryptionClientAdapter) {
 
         this.fileStorageLocation = Paths
                 .get(fileStorageProperties.getUploadDir())
                 .toAbsolutePath().normalize();
-        this.encryptionProvider = new EncryptionProvider(KEY);
+        this.encryptionClientAdapter = encryptionClientAdapter;
 
         try {
             Files.createDirectories(this.fileStorageLocation);
@@ -55,10 +54,7 @@ public class FileService {
                 throw new FileStorageException("Sorry! Filename contains invalid path sequence " + fileName);
             }
             //encrypt a file
-            // EncryptionProvider encryptionProvider = new EncryptionProvider(KEY);
-            File tmpInputFile = File.createTempFile("tmp", "input");
-            file.transferTo(tmpInputFile);
-            File encryptedFile = encryptionProvider.encrypt(tmpInputFile);
+            File encryptedFile = encryptionClientAdapter.encrypt(file);
 
             // Copy file to the target location (Replacing existing file with the same name)
             Path targetLocation = this.fileStorageLocation.resolve(fileName);
@@ -77,7 +73,9 @@ public class FileService {
             Path filePath = this.fileStorageLocation.resolve(fileName).normalize();
             Resource resource = new UrlResource(filePath.toUri());
             if (resource.exists()) {
-                return encryptionProvider.decrypt(resource.getFile());
+                // we need to decrypt a file that is downloaded from the server
+                File decryptedFile = encryptionClientAdapter.decrypt(resource.getFile());
+                return decryptedFile;
             } else {
                 throw new MyFileNotFoundException("File not found " + fileName);
             }

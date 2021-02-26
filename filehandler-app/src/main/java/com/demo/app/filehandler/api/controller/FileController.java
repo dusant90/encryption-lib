@@ -2,7 +2,6 @@ package com.demo.app.filehandler.api.controller;
 
 import com.demo.app.filehandler.api.entity.Response.UploadFileResponse;
 import com.demo.app.filehandler.api.service.FileService;
-import encrypt.EncryptionFailedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,23 +49,25 @@ public class FileController {
 
     @GetMapping("/file/download/{fileName:.+}")
     public ResponseEntity<Resource> downloadFile(@PathVariable String fileName, HttpServletRequest request) throws IOException {
-        // Load file as Resource
+
         File file = fileService.loadFileAsResource(fileName);
-
-        // Try to determine file's content type
-        String contentType = null;
-        contentType = request.getServletContext().getMimeType(file.getAbsolutePath());
-
-        // Fallback to the default content type if type could not be determined
-        if (contentType == null) {
-            contentType = "application/octet-stream";
-        }
 
         InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
 
         return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(contentType))
+                .contentType(MediaType.parseMediaType(getContentType(request, file)))
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"")
                 .body(resource);
+    }
+
+    private String getContentType(HttpServletRequest request, File file) {
+
+        String contentType = null;
+        contentType = request.getServletContext().getMimeType(file.getAbsolutePath());
+
+        if (contentType == null) {
+            contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE;
+        }
+        return contentType;
     }
 }
