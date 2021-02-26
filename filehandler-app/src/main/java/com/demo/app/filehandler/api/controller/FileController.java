@@ -5,7 +5,6 @@ import com.demo.app.filehandler.api.service.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -16,7 +15,6 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 
 @RestController
@@ -50,13 +48,11 @@ public class FileController {
     @GetMapping("/file/download/{fileName:.+}")
     public ResponseEntity<Resource> downloadFile(@PathVariable String fileName, HttpServletRequest request) throws IOException {
 
-        File file = fileService.loadFileAsResource(fileName);
-
-        InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
-
+        Resource resource = fileService.loadFileAsResource(fileName);
+        
         return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(getContentType(request, file)))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"")
+                .contentType(MediaType.parseMediaType(getContentType(request,resource.getFile())))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
                 .body(resource);
     }
 

@@ -55,12 +55,12 @@ public class FileService {
         }
     }
 
-    public File loadFileAsResource(String fileName) throws IOException {
+    public Resource loadFileAsResource(String fileName) throws IOException {
         try {
             Path filePath = this.fileStorageLocation.resolve(fileName).normalize();
             Resource resource = new UrlResource(filePath.toUri());
             if (resource.exists()) {
-                return resource.getFile();
+                return resource;
             } else {
                 throw new MyFileNotFoundException("File not found " + fileName);
             }
